@@ -1,5 +1,5 @@
 version=1
-id=
+id=3782325115
 title=ZOS
 description=Boot ZOS 6.2. Find a floppy. Play Zork, the classic Infocom trilogy.
 description=
