@@ -16,4 +16,4 @@ description=
 description=[h2]Compatibility[/h2]
 description=Build 42.20+ · Singleplayer (multiplayer untested)
 tags=Build 42;Immersion;Items
-visibility=unlisted
+visibility=public
