@@ -1,0 +1,25 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs and databases
+*.log
+*.sqlite
+
+# Ignore Project Zomboid game file symlinks
+GameLua/
+GameScripts/
+
+# Development scripts (machine-specific); README is tracked
+scripts/*
+!scripts/README.md
+
+# Cursor files
+.cursor/

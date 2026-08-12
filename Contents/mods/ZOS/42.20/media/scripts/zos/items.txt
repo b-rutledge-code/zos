@@ -1,0 +1,32 @@
+module Zos
+{
+	item FloppyZork1
+	{
+		DisplayCategory = Entertainment,
+		ItemType = base:normal,
+		Weight = 0.2,
+		Icon = FloppyZork1,
+		WorldStaticModel = Disk,
+		Tooltip = Tooltip_Zos_FloppyZork1,
+	}
+
+	item FloppyZork2
+	{
+		DisplayCategory = Entertainment,
+		ItemType = base:normal,
+		Weight = 0.2,
+		Icon = FloppyZork1,
+		WorldStaticModel = Disk,
+		Tooltip = Tooltip_Zos_FloppyZork2,
+	}
+
+	item FloppyZork3
+	{
+		DisplayCategory = Entertainment,
+		ItemType = base:normal,
+		Weight = 0.2,
+		Icon = FloppyZork1,
+		WorldStaticModel = Disk,
+		Tooltip = Tooltip_Zos_FloppyZork3,
+	}
+}
