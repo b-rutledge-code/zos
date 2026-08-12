@@ -1,16 +1,14 @@
 version=1
 id=
 title=ZOS
-description=The computer still works.
-description=
-description=Boot ZOS 6.2. Find a floppy. Play Zork I, II, or III.
+description=Boot ZOS 6.2. Find a floppy. Play Zork, the classic Infocom trilogy.
 description=
 description=[h2]How It Works[/h2]
 description=Right-click a Desktop Computer and [b]Device Options[/b]. [b]Turn On[/b], drag a floppy into Media, then [b]Play[/b] (needs grid power). ZOS types [b]a:[/b] then [b]zork[/b] / [b]zork2[/b] / [b]zork3[/b]. Turn Off closes the terminal.
 description=
-description=Find [b]ZORK I[/b], [b]ZORK II[/b], or [b]ZORK III[/b] floppies in electronics stores, bookstores, desks, bedrooms, or university. One disk in A: at a time.
+description=Find [b]ZORK I[/b], [b]ZORK II[/b], or [b]ZORK III[/b] floppies in electronics stores, bookstores, desks, bedrooms, or university.
 description=
-description=[b]SAVE[/b] and [b]RESTORE[/b] keep each title on that computer. Walk away or lose power and the terminal closes. [b]QUIT[/b] returns to the ZOS prompt.
+description=In Zork, type [b]SAVE[/b] and [b]RESTORE[/b] to save and load your game on that computer. Walk away or lose power and the terminal closes. [b]QUIT[/b] returns to the ZOS prompt.
 description=
 description=[h2]Credits[/h2]
 description=Zork I, II, and III are (c) Infocom / Activision. Story files are MIT-licensed from [url=https://github.com/historicalsource/zork1]historicalsource/zork1[/url], [url=https://github.com/historicalsource/zork2]zork2[/url], and [url=https://github.com/historicalsource/zork3]zork3[/url].

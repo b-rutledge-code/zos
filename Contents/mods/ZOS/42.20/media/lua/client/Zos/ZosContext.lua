@@ -137,12 +137,43 @@ function ZosFloppyAction:new(character, computer, item)
     return o
 end
 
+-- Includes unused lit frames 76–79. Those tiles keep GroupName=Desktop but
+-- CustomName is a placeholder, so sprite name is the reliable check.
+local DESKTOP_COMPUTER_SPRITES = {
+    ["appliances_com_01_72"] = true, -- S off
+    ["appliances_com_01_73"] = true, -- E off
+    ["appliances_com_01_74"] = true, -- N off
+    ["appliances_com_01_75"] = true, -- W off
+    ["appliances_com_01_76"] = true, -- S on
+    ["appliances_com_01_77"] = true, -- E on
+    ["appliances_com_01_78"] = true, -- N on
+    ["appliances_com_01_79"] = true, -- W on
+}
+
 local function isComputerObject(obj)
-    if not obj or not obj.getProperties then return false end
+    if not obj or obj.getSprite == nil then
+        return false
+    end
+    local sprite = obj:getSprite()
+    if sprite ~= nil and sprite.getName ~= nil then
+        local name = sprite:getName()
+        if name ~= nil and DESKTOP_COMPUTER_SPRITES[name] then
+            return true
+        end
+    end
+    if not obj.getProperties then
+        return false
+    end
     local props = obj:getProperties()
-    if not props then return false end
+    if not props then
+        return false
+    end
     return props:has("CustomName") and props:get("CustomName") == "Computer"
         and props:has("GroupName") and props:get("GroupName") == "Desktop"
+end
+
+function ZosContext.isDesktopComputer(obj)
+    return isComputerObject(obj)
 end
 
 local function findComputerOnSquare(square)
@@ -196,6 +227,7 @@ function ZosContext.setDeviceOn(computer, on)
         md.zosOn = nil
     end
     computer:transmitModData()
+    ZosCrtLight.sync(computer)
 end
 
 local function queueWalkThen(player, computerObj, action)
@@ -276,6 +308,7 @@ local function onComputerRemoved(obj)
     end
     ZosTerminal.closeFor(obj)
     ZosDeviceWindow.closeFor(obj)
+    ZosCrtLight.remove(obj)
 end
 
 Events.OnObjectAboutToBeRemoved.Add(onComputerRemoved)

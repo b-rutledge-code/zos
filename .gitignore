@@ -17,9 +17,11 @@
 GameLua/
 GameScripts/
 
-# Development scripts (machine-specific); README is tracked
+# Development scripts (machine-specific); README + deploy entrypoints are tracked
 scripts/*
 !scripts/README.md
+!scripts/deploy.sh
+!scripts/deploy_workshop.sh
 
 # Cursor files
 .cursor/

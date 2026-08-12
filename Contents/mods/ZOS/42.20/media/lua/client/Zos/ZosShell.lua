@@ -151,6 +151,8 @@ function ZosShell:leaveZork()
     self.zorkVm = nil
     self.zorkPrompt = nil
     self.zorkTitle = nil
+    self.zorkStatusPrev = nil
+    self.zorkMomentSession = nil
 end
 
 -- Runs the story until it wants a command or stops, collecting what it
@@ -183,6 +185,7 @@ function ZosShell:pumpZork()
 
         if status == "halted" then
             local fault = vm.error
+            self.zorkLastStatus = ZosZMachine.statusLine(vm)
             self:leaveZork()
             if fault ~= nil then
                 out[#out + 1] = ""
@@ -192,6 +195,7 @@ function ZosShell:pumpZork()
         end
 
         if vm.instructions > ZORK_STEP_CEILING then
+            self.zorkLastStatus = ZosZMachine.statusLine(vm)
             self:leaveZork()
             out[#out + 1] = ""
             out[#out + 1] = exeName .. " stopped responding."
@@ -251,7 +255,13 @@ function ZosShell:launchZork(cmd)
     self.zorkTitle = title
     self.inZork = true
     self.zorkPrompt = ZORK_PROMPT
-    return { lines = self:pumpZork() }
+    self.zorkMomentSession = ZosMoments.newSession()
+    self.zorkLastStatus = nil
+    local lines = self:pumpZork()
+    if self.zorkVm ~= nil then
+        self.zorkStatusPrev = ZosZMachine.statusLine(self.zorkVm)
+    end
+    return { lines = lines }
 end
 
 -- QUIT, RESTART and SAVE are the story's own commands, so a turn ending with
@@ -259,12 +269,28 @@ end
 function ZosShell:executeZork(rawLine)
     print("ZOS: > " .. tostring(rawLine))
     local exeName = self.zorkTitle and self.zorkTitle.exeName or "ZORK.EXE"
+    local titleCmd = self.zorkTitle and self.zorkTitle.cmd
+    local prevStatus = self.zorkStatusPrev
+    local momentSession = self.zorkMomentSession
     if not ZosZMachine.provideInput(self.zorkVm, rawLine or "") then
         print("ZOS: not accepting input")
         self:leaveZork()
         return { lines = { exeName .. " is not accepting input." } }
     end
+    ZosMood.onZorkCommand(self.player, rawLine)
     local lines = self:pumpZork()
+    local currStatus = nil
+    if self.zorkVm ~= nil then
+        currStatus = ZosZMachine.statusLine(self.zorkVm)
+    else
+        currStatus = self.zorkLastStatus
+    end
+    if titleCmd ~= nil and currStatus ~= nil then
+        ZosMoments.evaluate(self.player, titleCmd, prevStatus, currStatus, lines, momentSession)
+    end
+    if self.zorkVm ~= nil then
+        self.zorkStatusPrev = currStatus
+    end
     if not self.inZork then
         print("ZOS: left zork")
     end

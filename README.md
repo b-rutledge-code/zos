@@ -7,7 +7,9 @@ play the real Infocom trilogy from an in-game terminal.
 ## Features
 
 - Right-click a Desktop Computer → **Device Options** (same as TV/radio)
-- Insert a Zork floppy in the Media slot (one title in A: at a time); **Turn On**, then **Play** types `a:` then the matching exe
+- Insert a Zork floppy in the Media slot; **Turn On**, then **Play** types `a:` then the matching exe
+- Lit CRT + soft green lamp light while the PC is on and powered
+- Playing Zork eases boredom/unhappiness (capped); story beats grant one-time VHS-style skill XP
 - Fake DOS shell: `dir`, `cd`, `type`, `a:`, `c:`, `zork`, `zork2`, `zork3`, `exit`
 - Find ZORK I / II / III floppies (electronics stores, bookstores, desks, bedrooms, university)
 - Runs the official MIT-licensed Zork I r119, Zork II r63, and Zork III r25 story files through a Lua Z-machine v3 interpreter
