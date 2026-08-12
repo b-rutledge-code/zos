@@ -4,3 +4,5 @@ author=texasrut
 description=ZOS 6.2 -- a flavor 1993 computer OS. Find Zork I/II/III floppies and play the real Infocom trilogy on an in-game desktop computer.
 modversion=0.1.0
 versionMin=42.20
+poster=poster.png
+icon=poster.png

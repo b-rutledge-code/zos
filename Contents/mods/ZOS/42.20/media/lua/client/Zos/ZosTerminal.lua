@@ -2,8 +2,8 @@
     ZosTerminal - a CRT in a vanilla-style panel frame.
 
     Inventory-grey border, no title bar or close button: the screen is still
-    a black rectangle with monospace green text. Closes via `exit`, walking
-    away, or power loss.
+    a black rectangle with monospace green text. Drag anywhere on the CRT to
+    move it. Closes via `exit`, walking away, or power loss.
 ]]
 
 require "ISUI/ISPanel"
@@ -38,6 +38,10 @@ local function lineHeight()
     return getTextManager():getFontHeight(FONT)
 end
 
+local function isGamePaused()
+    return ZosContext.isGamePaused()
+end
+
 function ZosTerminal:initialise()
     ISPanel.initialise(self)
 end
@@ -70,13 +74,12 @@ function ZosTerminal:createChildren()
     self.entry:initialise()
     self.entry:instantiate()
     self.entry.font = FONT
-    self.entry.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-    self.entry.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-    self.entry:setTextRGBA(GREEN.r, GREEN.g, GREEN.b, 1)
     self.entry.zosTerminal = self
     self.entry.onCommandEntered = ZosTerminal.onCommandEntered
     self.entry.onOtherKey = ZosTerminal.onOtherKey
     self:addChild(self.entry)
+    self:clearEntryChrome()
+    self.entry:setTextRGBA(GREEN.r, GREEN.g, GREEN.b, 1)
 
     self:layoutRows()
 end
@@ -120,16 +123,52 @@ end
 
 function ZosTerminal:refocus()
     self:bringToTop()
+    if isGamePaused() then
+        return
+    end
     if self.entry then
+        self:setEntryEditable(true)
         self.entry:focus()
     end
 end
 
--- Clicks land on the scrollback or the input row, not the parent panel, so
--- those children have to hand focus back after you click off the CRT.
+function ZosTerminal:clearEntryChrome()
+    if self.entry == nil then
+        return
+    end
+    -- ISTextEntryBox:setEditable resets borderColor to the vanilla grey frame.
+    self.entry.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
+    self.entry.borderColor = { r = 0, g = 0, b = 0, a = 0 }
+end
+
+function ZosTerminal:setEntryEditable(editable)
+    if self.entry == nil then
+        return
+    end
+    self.entry:setEditable(editable)
+    self:clearEntryChrome()
+end
+
+function ZosTerminal:applyPauseState(paused)
+    if self.entry == nil then
+        return
+    end
+    if paused then
+        self.entry:unfocus()
+        self:setEntryEditable(false)
+    else
+        self:setEntryEditable(true)
+        self.entry:focus()
+    end
+end
+
+-- Clicks land on the scrollback, not the parent panel. Start the window drag
+-- on the terminal itself (ISCollapsableWindow style); parent onMouseMove still
+-- fires while the cursor is over children.
 function ZosTerminal.onChildMouseDown(child, x, y)
     local term = child.zosTerminal
     if term then
+        term.moving = true
         term:refocus()
     end
     return true
@@ -153,8 +192,37 @@ function ZosTerminal:prerender()
 end
 
 function ZosTerminal:onMouseDown(x, y)
-    self:refocus()
+    self.moving = true
+    if not isGamePaused() then
+        self:refocus()
+    else
+        self:bringToTop()
+    end
     return true
+end
+
+function ZosTerminal:onMouseMove(dx, dy)
+    if self.moving then
+        self:setX(self.x + dx)
+        self:setY(self.y + dy)
+        self:bringToTop()
+    end
+end
+
+function ZosTerminal:onMouseMoveOutside(dx, dy)
+    if self.moving then
+        self:setX(self.x + dx)
+        self:setY(self.y + dy)
+        self:bringToTop()
+    end
+end
+
+function ZosTerminal:onMouseUp(x, y)
+    self.moving = false
+end
+
+function ZosTerminal:onMouseUpOutside(x, y)
+    self.moving = false
 end
 
 function ZosTerminal:appendLine(text)
@@ -219,6 +287,9 @@ function ZosTerminal:refreshPrompt()
 end
 
 function ZosTerminal:playInsertedFloppy(initialWait)
+    if isGamePaused() then
+        return
+    end
     if self.shell == nil or self.shell.inZork or self.typeScript ~= nil then
         return
     end
@@ -313,6 +384,7 @@ end
 function ZosTerminal.onCommandEntered(entryBox)
     local term = entryBox.zosTerminal
     if not term then return end
+    if isGamePaused() then return end
     if term.typeScript ~= nil then return end
     local text = entryBox:getText()
     entryBox:setText("")
@@ -330,6 +402,7 @@ function ZosTerminal.onOtherKey(entryBox, key)
 end
 
 function ZosTerminal:close()
+    self.moving = false
     self:setVisible(false)
     self:removeFromUIManager()
     self.player = nil
@@ -388,6 +461,14 @@ end
 function ZosTerminal:update()
     ISPanel.update(self)
     if not self:getIsVisible() then return end
+    local paused = isGamePaused()
+    if paused ~= self.pausedLastTick then
+        self:applyPauseState(paused)
+        self.pausedLastTick = paused
+    end
+    if paused then
+        return
+    end
     self:updateTypeScript()
     if not self.player or not self.computer or self.player:isDead() then
         self:close()
@@ -410,13 +491,17 @@ function ZosTerminal:new(x, y, width, height)
     local o = ISPanel:new(x, y, width, height)
     setmetatable(o, self)
     self.__index = self
-    o.moveWithMouse = false
+    o.moving = false
+    o.pausedLastTick = false
     o.borderColor = { r = 0.4, g = 0.4, b = 0.4, a = 1 }
     o.lines = {}
     return o
 end
 
 function ZosTerminal.open(player, computerObj, autoPlay)
+    if isGamePaused() then
+        return nil
+    end
     local term = ZosTerminal.instance
     if not term then
         local sw = getCore():getScreenWidth()
@@ -434,6 +519,7 @@ function ZosTerminal.open(player, computerObj, autoPlay)
     term.carriedPrompt = nil
     term.showStatus = false
     term.typeScript = nil
+    term.pausedLastTick = false
     term:layoutRows()
 
     for _, line in ipairs(BOOT_LINES) do
@@ -442,11 +528,13 @@ function ZosTerminal.open(player, computerObj, autoPlay)
     term:refreshOutput()
     term:refreshPrompt()
     term.entry:setText("")
+    term:setEntryEditable(true)
 
     term:addToUIManager()
     term:setVisible(true)
     term:bringToTop()
     term.entry:focus()
+    term:clearEntryChrome()
     if autoPlay then
         term:playInsertedFloppy(TYPE_BOOT_TICKS)
     end

@@ -7,7 +7,7 @@ play the real Infocom trilogy from an in-game terminal.
 ## Features
 
 - Right-click a Desktop Computer → **Device Options** (same as TV/radio)
-- Insert a Zork floppy in the Media slot (one title in A: at a time); **Play** types `a:` then the matching exe
+- Insert a Zork floppy in the Media slot (one title in A: at a time); **Turn On**, then **Play** types `a:` then the matching exe
 - Fake DOS shell: `dir`, `cd`, `type`, `a:`, `c:`, `zork`, `zork2`, `zork3`, `exit`
 - Find ZORK I / II / III floppies (electronics stores, bookstores, desks, bedrooms, university)
 - Runs the official MIT-licensed Zork I r119, Zork II r63, and Zork III r25 story files through a Lua Z-machine v3 interpreter
@@ -24,7 +24,7 @@ play the real Infocom trilogy from an in-game terminal.
 1. Find a Desktop Computer (offices, homes)
 2. Find a Zork floppy (see spawn locations above)
 3. Right-click → **Device Options**
-4. Drag the floppy into Media and hit **Play** (needs power)
+4. Drag the floppy into Media, **Turn On**, then hit **Play** (needs grid power)
 
 ## Attribution
 

@@ -172,6 +172,32 @@ function ZosContext.isComputerPowered(square)
     return square:haveElectricity() or (square:hasGridPower() and square:getRoom() ~= nil)
 end
 
+-- Same gate vanilla menus use (inventory, vehicles, hotbar).
+function ZosContext.isGamePaused()
+    local speeds = UIManager.getSpeedControls()
+    return speeds ~= nil and speeds:getCurrentGameSpeed() == 0
+end
+
+function ZosContext.isDeviceOn(computer)
+    if computer == nil or computer.getModData == nil then
+        return false
+    end
+    return computer:getModData().zosOn == true
+end
+
+function ZosContext.setDeviceOn(computer, on)
+    if computer == nil or computer.getModData == nil then
+        return
+    end
+    local md = computer:getModData()
+    if on then
+        md.zosOn = true
+    else
+        md.zosOn = nil
+    end
+    computer:transmitModData()
+end
+
 local function queueWalkThen(player, computerObj, action)
     if not luautils.walkAdjObject(player, computerObj, false) then return end
     ISTimedActionQueue.add(action)
@@ -179,16 +205,19 @@ end
 
 function ZosContext.openDevice(player, computerObj)
     if not player or not computerObj then return end
+    if ZosContext.isGamePaused() then return end
     queueWalkThen(player, computerObj, ZosOpenDeviceAction:new(player, computerObj))
 end
 
 function ZosContext.openTerminal(player, computerObj, autoPlay)
     if not player or not computerObj then return end
+    if ZosContext.isGamePaused() then return end
     queueWalkThen(player, computerObj, ZosOpenTerminalAction:new(player, computerObj, autoPlay))
 end
 
 function ZosContext.openOrFocusTerminal(player, computerObj, autoPlay)
     if not player or not computerObj then return end
+    if ZosContext.isGamePaused() then return end
     if ZosTerminal.isOpenFor(computerObj) then
         if autoPlay then
             ZosTerminal.instance:playInsertedFloppy()
@@ -223,6 +252,7 @@ end
 
 local function fillComputerMenu(playerNum, context, worldobjects, test)
     if test and ISWorldObjectContextMenu and ISWorldObjectContextMenu.Test then return true end
+    if ZosContext.isGamePaused() then return end
 
     local square = squareFromWorldObjects(worldobjects)
     local computerObj = findComputerOnSquare(square)

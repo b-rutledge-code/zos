@@ -22,8 +22,9 @@ DOS A: holds one disk. Device Options opens a ValuTech-style device window
 drag a Zork floppy in (it leaves inventory), right-click to eject (spring-loaded,
 no power; returns to inv or drops at feet if full), **Play** to type `a:` then
 the matching zork command on the CRT. Pickup/dismantle dumps the disk on the
-square. `ModData.zosFloppy` records which title is in the slot. Turn On / Turn
-Off control the CRT; insert and Play require grid power.
+square. `ModData.zosFloppy` records which title is in the slot. Turn On /
+Turn Off switch the PC (`ModData.zosOn`, LED); only **Play** opens the CRT.
+Insert and Play require grid power; Play also requires the PC on.
 
 ## Why bake the story file into Lua
 

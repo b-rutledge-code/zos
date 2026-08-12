@@ -1,7 +1,7 @@
 --[[
     ZosDeviceWindow - ValuTech-style collapsable device window for Desktop
-    Computers. General / Power / Media (floppy drop). Turn On opens the CRT;
-    Turn Off closes it.
+    Computers. General / Power / Media (floppy drop). Turn On switches the PC
+    on (LED); Play opens the CRT. Turn Off switches off and closes the CRT.
 ]]
 
 require "ISUI/ISCollapsableWindow"
@@ -140,14 +140,18 @@ function ZosDevicePower:onToggle()
     if self.player == nil or self.device == nil then
         return
     end
-    if ZosTerminal.isOpenFor(self.device) then
+    if ZosContext.isGamePaused() then
+        return
+    end
+    if ZosContext.isDeviceOn(self.device) then
+        ZosContext.setDeviceOn(self.device, false)
         ZosTerminal.closeFor(self.device)
         return
     end
     if not isPowered(self.device) then
         return
     end
-    ZosContext.openOrFocusTerminal(self.player, self.device, false)
+    ZosContext.setDeviceOn(self.device, true)
 end
 
 function ZosDevicePower:update()
@@ -155,10 +159,11 @@ function ZosDevicePower:update()
     if self.device == nil then
         return
     end
-    local on = ZosTerminal.isOpenFor(self.device)
+    local on = ZosContext.isDeviceOn(self.device)
     self.led:setLedIsOn(on)
     if on then
         self.toggleButton:setTitle(getText("ContextMenu_Turn_Off"))
+        -- Stay visually enabled while paused; onToggle ignores clicks at speed 0.
         self.toggleButton:setEnable(true)
     else
         self.toggleButton:setTitle(getText("ContextMenu_Turn_On"))
@@ -279,7 +284,13 @@ function ZosDeviceMedia:onPlay()
     if self.player == nil or self.device == nil then
         return
     end
+    if ZosContext.isGamePaused() then
+        return
+    end
     if not isPowered(self.device) then
+        return
+    end
+    if not ZosContext.isDeviceOn(self.device) then
         return
     end
     if ZosFloppies.insertedType(self.device) == nil then
@@ -294,6 +305,7 @@ function ZosDeviceMedia:update()
         return
     end
     local powered = isPowered(self.device)
+    local deviceOn = ZosContext.isDeviceOn(self.device)
     local inserted = ZosFloppies.insertedType(self.device)
     self.itemDropBox.isLocked = not powered and inserted == nil
     if inserted ~= nil then
@@ -304,7 +316,8 @@ function ZosDeviceMedia:update()
     local termOpen = ZosTerminal.isOpenFor(self.device)
     local inZork = termOpen and ZosTerminal.instance.shell ~= nil and ZosTerminal.instance.shell.inZork
     local typing = termOpen and ZosTerminal.instance.typeScript ~= nil
-    self.playButton:setEnable(powered and inserted ~= nil and not inZork and not typing)
+    -- Pause is handled in onPlay (no red disabled border); setEnable is for real gates only.
+    self.playButton:setEnable(powered and deviceOn and inserted ~= nil and not inZork and not typing)
 end
 
 function ZosDeviceMedia:prerender()
@@ -328,6 +341,9 @@ end
 -- Window ------------------------------------------------------------------
 
 function ZosDeviceWindow.activate(player, computer)
+    if ZosContext.isGamePaused() then
+        return nil
+    end
     local playerNum = player:getPlayerNum()
     local window = ZosDeviceWindow.instances[playerNum]
     if window == nil then

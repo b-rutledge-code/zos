@@ -4,8 +4,9 @@
 
 Right-clicking a Desktop Computer (**Device Options**, same as TV/radio) opens a ValuTech-style device window
 (General / Power / Media). Drag a Zork I/II/III floppy into the Media slot.
-**Play** opens the CRT (ZOS 6.2) and types `a:` then `zork` / `zork2` /
-`zork3` for that disk. Turn On still boots to `C:\>`; Turn Off closes the CRT.
+**Turn On** switches the PC on (LED); **Play** opens the CRT (ZOS 6.2) and types
+`a:` then `zork` / `zork2` / `zork3` for that disk. **Turn Off** switches the PC
+off and closes the CRT.
 
 ## Build Support
 
@@ -14,8 +15,8 @@ Right-clicking a Desktop Computer (**Device Options**, same as TV/radio) opens a
 ## Key Flow
 
 1. `ZosContext.lua` hooks `Events.OnFillWorldObjectContextMenu`, finds a Desktop Computer on the clicked square, and adds vanilla **Device Options** (`IGUI_DeviceOptions`). Walk adjacent, then a 1-tick `ISBaseTimedAction` opens `ZosDeviceWindow` (`ISCollapsableWindow` + vanilla `RWMElement` sections: General, Power, Media).
-2. Power shows an LED + vanilla **Turn On** / **Turn Off** + "Has power." / "No power." Turn On opens the CRT (needs grid power); Turn Off closes it. LED follows CRT on/off. Media is an `ISItemDropBox` with the floppy icon as backdrop: drop a Zork floppy to remove it from inventory, set `ModData.zosFloppy` (`Zos.FloppyZork1` / `2` / `3`), and `transmitModData`; right-click ejects with no power (back to inv, or at feet if full; aborts Zork if running). Pickup/dismantle (`OnObjectAboutToBeRemoved`) dumps the disk on the square. **Play** (vanilla `IGUI_media_play`) opens the CRT if needed and types `a:` then the matching exe live into the prompt, with a short pause between commands. Insert and Play require grid power.
-3. `ZosTerminal.lua` is a borderless `ISPanel` (inventory-grey border) with `ISRichTextPanel` scrollback and a transparent `ISTextEntryBox`. Opening prints the ZOS boot banner and creates a `ZosShell`.
+2. Power shows an LED + vanilla **Turn On** / **Turn Off** + "Has power." / "No power." Turn On sets `ModData.zosOn` (LED on) and does not open the CRT. Turn Off clears `zosOn` and closes the CRT if open. Media is an `ISItemDropBox` with the floppy icon as backdrop: drop a Zork floppy to remove it from inventory, set `ModData.zosFloppy` (`Zos.FloppyZork1` / `2` / `3`), and `transmitModData`; right-click ejects with no power (back to inv, or at feet if full; aborts Zork if running). Pickup/dismantle (`OnObjectAboutToBeRemoved`) dumps the disk on the square. **Play** (vanilla `IGUI_media_play`) is the only way to open the CRT: needs grid power, device on, and a disk; greyed out otherwise. Play types `a:` then the matching exe live into the prompt. Insert requires grid power.
+3. `ZosTerminal.lua` is a borderless `ISPanel` (inventory-grey border) with `ISRichTextPanel` scrollback and a transparent `ISTextEntryBox`. Drag the CRT (scrollback or frame) to move it. Opening prints the ZOS boot banner and creates a `ZosShell`.
 4. Each submitted line goes to `ZosShell:execute(line)`. `a:` is ready when `zosFloppy` is set. `dir` on A: shows `ZORK.EXE` / `ZORK2.EXE` / `ZORK3.EXE` for the inserted title.
 5. `zork` / `zork2` / `zork3` (must match the inserted disk, from `A:\>`) builds a Z-machine from `ZosStoryZork1`/`2`/`3` and pumps to the story prompt. Save/restore use `zosZork1Save` / `zosZork2Save` / `zosZork3Save`. `QUIT` or a VM fault returns to `A:\>`.
 6. `ZosTerminal:update()` closes if the computer is gone, unpowered, or the player walks away.
