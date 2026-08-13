@@ -10,6 +10,8 @@ description=Find [b]ZORK I[/b], [b]ZORK II[/b], or [b]ZORK III[/b] floppies in e
 description=
 description=In Zork, type [b]SAVE[/b] and [b]RESTORE[/b] to save and load your game on that computer. Walk away or lose power and the terminal closes. [b]QUIT[/b] returns to the ZOS prompt.
 description=
+description=Playing Zork eases boredom and unhappiness. Story beats grant one-time skill XP (VHS-style).
+description=
 description=[h2]Credits[/h2]
 description=Zork I, II, and III are (c) Infocom / Activision. Story files are MIT-licensed from [url=https://github.com/historicalsource/zork1]historicalsource/zork1[/url], [url=https://github.com/historicalsource/zork2]zork2[/url], and [url=https://github.com/historicalsource/zork3]zork3[/url].
 description=
