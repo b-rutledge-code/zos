@@ -25,3 +25,8 @@ scripts/*
 
 # Cursor files
 .cursor/
+
+# Local research only — do not commit or ship
+third_party/sq3/
+third_party/scummvm/
+third_party/sci0-gold/
