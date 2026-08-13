@@ -18,6 +18,11 @@
 
 ZosZMachine = {}
 
+Zos = Zos or {}
+if Zos.debug == nil then
+    function Zos.debug() end
+end
+
 local DEFAULT_STEP_BUDGET = 400000
 local RNG_MODULUS = 2147483647
 local RNG_MULTIPLIER = 16807
@@ -209,8 +214,8 @@ function ZosZMachine.new(story, seed)
     vm.version = version
     vm.highBase = rawWord(0x04)
     vm.initialPC = rawWord(0x06)
-    print(string.format("ZOS: header v=%d pc=0x%X static=0x%X dict=0x%X",
-        version, vm.initialPC, rawWord(0x0E), rawWord(0x08)))
+    Zos.debug("ZOS: header v=%d pc=0x%X static=0x%X dict=0x%X",
+        version, vm.initialPC, rawWord(0x0E), rawWord(0x08))
     vm.dictBase = rawWord(0x08)
     vm.objBase = rawWord(0x0A)
     vm.globalsBase = rawWord(0x0C)

@@ -19,6 +19,32 @@ local ZORK_STEP_SLICE = 200000
 local ZORK_STEP_CEILING = 5000000
 local ZORK_PROMPT = ">"
 
+-- Zork I r119 has no HELP verb; we answer at the shell before the Z-machine.
+local ZORK_HELP_LINES = {
+    "ZORK commands:",
+    "  N, S, E, W, U, D, NE, NW, SE, SW  -- move",
+    "  LOOK / L                          -- describe the room",
+    "  EXAMINE (thing) / X (thing)       -- look closer",
+    "  INVENTORY / I                     -- what you're carrying",
+    "  TAKE / GET, DROP, OPEN, CLOSE     -- manipulate things",
+    "  SAVE / RESTORE                    -- save or load on this computer",
+    "  RESTART                           -- start the story over",
+    "  QUIT                              -- return to ZOS",
+}
+
+-- r119 has no X abbrev; map "x thing" → "examine thing" before the Z-machine.
+local function expandZorkShorthand(line)
+    local trimmed = string.trim(line or "")
+    if string.lower(trimmed) == "x" then
+        return "examine"
+    end
+    local object = string.match(trimmed, "^[xX]%s+(.+)$")
+    if object ~= nil then
+        return "examine " .. object
+    end
+    return trimmed
+end
+
 local C_ROOT_DIR = {
     "GAMES        <DIR>",
     "WORK         <DIR>",
@@ -175,7 +201,7 @@ function ZosShell:pumpZork()
             if partial ~= "" then
                 self.zorkPrompt = partial
             end
-            print(string.format("ZOS: waiting for input after %d instructions", vm.instructions))
+            Zos.debug("ZOS: waiting for input after %d instructions", vm.instructions)
             return out
         end
 
@@ -219,14 +245,14 @@ function ZosShell:launchZork(cmd)
         return { lines = { title.exeName .. " failed to load: story missing" } }
     end
 
-    print(string.format("ZOS: launching %s r%d, %d bytes, %d chunks",
-        title.cmd, story.release, story.length, #story.chunks))
+    Zos.debug("ZOS: launching %s r%d, %d bytes, %d chunks",
+        title.cmd, story.release, story.length, #story.chunks)
     local vm, err = ZosZMachine.new(story, ZombRand(2147483646) + 1)
     if vm == nil then
         print("ZOS: load failed: " .. tostring(err))
         return { lines = { title.exeName .. " failed to load: " .. tostring(err) } }
     end
-    print(string.format("ZOS: loaded, initial PC 0x%X", vm.initialPC))
+    Zos.debug("ZOS: loaded, initial PC 0x%X", vm.initialPC)
 
     local computer = self.computer
     local saveKey = title.saveKey
@@ -237,7 +263,7 @@ function ZosShell:launchZork(cmd)
         local md = computer:getModData()
         md[saveKey] = blob
         computer:transmitModData()
-        print("ZOS: saved " .. #blob .. " hex chars to " .. saveKey)
+        Zos.debug("ZOS: saved " .. #blob .. " hex chars to " .. saveKey)
         return true
     end
     vm.restoreHandler = function()
@@ -246,7 +272,7 @@ function ZosShell:launchZork(cmd)
         end
         local blob = computer:getModData()[saveKey]
         if blob ~= nil then
-            print("ZOS: restoring " .. #blob .. " hex chars from " .. saveKey)
+            Zos.debug("ZOS: restoring " .. #blob .. " hex chars from " .. saveKey)
         end
         return blob
     end
@@ -260,6 +286,8 @@ function ZosShell:launchZork(cmd)
     local lines = self:pumpZork()
     if self.zorkVm ~= nil then
         self.zorkStatusPrev = ZosZMachine.statusLine(self.zorkVm)
+        lines[#lines + 1] = ""
+        lines[#lines + 1] = "(Type HELP for a list of commands.)"
     end
     return { lines = lines }
 end
@@ -267,17 +295,23 @@ end
 -- QUIT, RESTART and SAVE are the story's own commands, so a turn ending with
 -- the machine halted is what drops the player back to the DOS prompt.
 function ZosShell:executeZork(rawLine)
-    print("ZOS: > " .. tostring(rawLine))
+    Zos.debug("ZOS: > " .. tostring(rawLine))
     local exeName = self.zorkTitle and self.zorkTitle.exeName or "ZORK.EXE"
+    local trimmed = string.trim(rawLine or "")
+    local helpCmd = string.lower(trimmed)
+    if helpCmd == "help" or helpCmd == "hint" or helpCmd == "hints" then
+        return { lines = copyLines(ZORK_HELP_LINES) }
+    end
+    local zorkLine = expandZorkShorthand(trimmed)
     local titleCmd = self.zorkTitle and self.zorkTitle.cmd
     local prevStatus = self.zorkStatusPrev
     local momentSession = self.zorkMomentSession
-    if not ZosZMachine.provideInput(self.zorkVm, rawLine or "") then
-        print("ZOS: not accepting input")
+    if not ZosZMachine.provideInput(self.zorkVm, zorkLine) then
+        Zos.debug("ZOS: not accepting input")
         self:leaveZork()
         return { lines = { exeName .. " is not accepting input." } }
     end
-    ZosMood.onZorkCommand(self.player, rawLine)
+    ZosMood.onZorkCommand(self.player, zorkLine)
     local lines = self:pumpZork()
     local currStatus = nil
     if self.zorkVm ~= nil then
@@ -292,7 +326,7 @@ function ZosShell:executeZork(rawLine)
         self.zorkStatusPrev = currStatus
     end
     if not self.inZork then
-        print("ZOS: left zork")
+        Zos.debug("ZOS: left zork")
     end
     return { lines = lines }
 end

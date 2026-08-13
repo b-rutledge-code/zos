@@ -1,7 +1,9 @@
 version=1
 id=3782325115
 title=ZOS
-description=Boot ZOS 6.2. Find a floppy. Play Zork, the classic Infocom trilogy.
+description=[b]Zed Operating System (ZOS)[/b] is a popular OS for desktop PCs. Find a floppy and play the real Zork trilogy on the CRT.
+description=
+description=Zork began as a late-1970s MIT mainframe game, then Infocom brought it to home computers in the early 1980s and made interactive fiction mainstream. This mod runs the real Infocom story files for Zork I, II, and III. It was still a popular PC game in 1993.
 description=
 description=[h2]How It Works[/h2]
 description=Right-click a Desktop Computer and [b]Device Options[/b]. [b]Turn On[/b], drag a floppy into Media, then [b]Play[/b] (needs grid power). Turn Off closes the terminal.

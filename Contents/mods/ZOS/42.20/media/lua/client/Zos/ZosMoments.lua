@@ -206,7 +206,7 @@ local function grant(player, moment)
             HaloTextHelper.getGoodColor()
         )
     end
-    print(string.format("ZOS: moment %s → %s +%d XP (halo)", moment.id, moment.perk, xp))
+    Zos.debug("ZOS: moment %s → %s +%d XP (halo)", moment.id, moment.perk, xp)
     return true
 end
 

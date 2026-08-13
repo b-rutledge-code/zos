@@ -108,7 +108,7 @@ function ZosFloppyAction:perform()
     if self.item == nil then
         local itemType = ZosFloppies.clearInserted(self.computer)
         ZosFloppies.giveOrDrop(self.character, itemType, self.computer:getSquare())
-        print("ZOS: ejected floppy")
+        Zos.debug("ZOS: ejected floppy")
         ZosTerminal.onFloppyEjected(self.computer)
     else
         local container = self.item:getContainer()
@@ -116,7 +116,7 @@ function ZosFloppyAction:perform()
             container:Remove(self.item)
         end
         md.zosFloppy = self.item:getFullType()
-        print("ZOS: inserted " .. tostring(md.zosFloppy))
+        Zos.debug("ZOS: inserted " .. tostring(md.zosFloppy))
     end
     self.computer:transmitModData()
     ISBaseTimedAction.perform(self)
@@ -304,7 +304,7 @@ local function onComputerRemoved(obj)
     local itemType = ZosFloppies.clearInserted(obj)
     if itemType ~= nil then
         ZosFloppies.dropOnSquare(obj:getSquare(), itemType)
-        print("ZOS: dumped floppy on square (" .. tostring(itemType) .. ")")
+        Zos.debug("ZOS: dumped floppy on square (" .. tostring(itemType) .. ")")
     end
     ZosTerminal.closeFor(obj)
     ZosDeviceWindow.closeFor(obj)
@@ -317,5 +317,5 @@ Events.OnGameStart.Add(function()
     local n1 = ZosStoryZork1 and ZosStoryZork1.chunks and #ZosStoryZork1.chunks or 0
     local n2 = ZosStoryZork2 and ZosStoryZork2.chunks and #ZosStoryZork2.chunks or 0
     local n3 = ZosStoryZork3 and ZosStoryZork3.chunks and #ZosStoryZork3.chunks or 0
-    print(string.format("ZOS: client start, story chunks I=%d II=%d III=%d", n1, n2, n3))
+    Zos.debug("ZOS: client start, story chunks I=%d II=%d III=%d", n1, n2, n3)
 end)
